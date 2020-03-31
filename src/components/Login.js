@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Image, View, ScrollView} from 'react-native';
+import {StyleSheet, Image, View, ScrollView, Keyboard} from 'react-native';
 import {
   Container,
   Header,
@@ -16,6 +16,7 @@ import {
   Item,
   Input,
   Label,
+  Toast
 } from 'native-base';
 
 /*export const Login = ({navigation}) => (
@@ -42,9 +43,25 @@ import {
   </Container>
 );*/
 
+function loginApp(u,p){
+  Keyboard.dismiss();
+  
+  if(String(u).trim().length != 0 && String(p).trim().length !=0)
+  {
+    alert(u + " " + p);
+  }
+  else
+  {
+    alert("Completa los campos para iniciar sesión");
+  }
+}
+
 export function Login({navigation}) {
+  const [userData, onChangeTextUsr] = React.useState('');
+  const [passData, onChangeTextPass] = React.useState(''); 
+
   return (
-    <ScrollView>
+    <ScrollView keyboardShouldPersistTaps="handled">
       <Container>
         {/*<Header>
         <Left />
@@ -71,6 +88,7 @@ export function Login({navigation}) {
               keyboardType="default"
               returnKeyType="next"
               autoCorrect={false}
+              onChangeText={text => onChangeTextUsr(text)}
             />
           </Item>
           <Item floatingLabel style={stylesLogin.inputMargins}>
@@ -79,14 +97,16 @@ export function Login({navigation}) {
               autoCapitalize="none"
               secureTextEntry={true}
               returnKeyType="go"
-              ref={component => (this.Password = component)}
+              //ref={component => (this.Password = component)}
+              onChangeText={text => onChangeTextPass(text)}
             />
           </Item>
           <View style={stylesLogin.btnContainerLogin}>
             <Button
               rounded
               block
-              onPress={() => navigation.navigate('Dashboard')}>
+              //onPress={() => navigation.navigate('Dashboard')}>
+              onPress={() => loginApp(userData, passData)}>
               <Text>Iniciar sesión</Text>
             </Button>
           </View>

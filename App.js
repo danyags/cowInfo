@@ -12,8 +12,11 @@ import {
 //import {View, Text, Button} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import * as LoginScreen from './src/components/Login';
-import * as DashboardScreen from './src/components/Dashboard';
+//import * as LoginScreen from './src/components/Login';
+//import * as DashboardScreen from './src/components/Dashboard';
+//import TestFile from './src/components/TestFile';
+import LoginScreen from './src/components/LoginScreen';
+import DashboardScreen from './src/components/DashboardScreen';
 
 const Stack = createStackNavigator();
 
@@ -23,13 +26,13 @@ function App() {
       <StatusBar barStyle="light-content" />
       <Stack.Navigator>
         <Stack.Screen
-          name="Login"
-          component={LoginScreen.Login}
+          name="LoginScreen"
+          component={LoginScreen}
           options={{headerShown: false}}
         />
         <Stack.Screen
-          name="Dashboard"
-          component={DashboardScreen.Dashboard}
+          name="DashboardScreen"
+          component={DashboardScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>
