@@ -1,3 +1,4 @@
+//import liraries
 import React, {Component} from 'react';
 import {StyleSheet, Image, View, ScrollView, Keyboard} from 'react-native';
 import {
@@ -11,149 +12,132 @@ import {
 } from 'native-base';
 import AsyncStorage from '@react-native-community/async-storage';
 import {StackActions} from '@react-navigation/native';
+import {CommonActions} from '@react-navigation/native';
 import Display from 'react-native-display';
 
-export default class LoginScreen extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      usr: '',
-      pass: '',
-      errorFlag: false,
-      errorText: '',
-    };
-    this.isLoggedFunction().done();
-  }
+// create a component
+const LoginScreen = ({navigation, helper}) => {
+  const [usr, setUsr] = React.useState('');
+  const [psw, setPsw] = React.useState('');
+  const [message, setMessage] = React.useState('');
+  const [flag, setFlag] = React.useState(false);
 
-  handleMessageErrorFunction = (message, flag) => {
-    this.setState({errorFlag: flag, errorText: message});
-  }
-
-  isLoggedFunction = async () => {
-    var value = await AsyncStorage.getItem('isLogged');
-    //await AsyncStorage.removeItem('isLogged');
-    if (value !== null) {
-      this.props.navigation.dispatch(StackActions.replace('DashboardScreen'));
-    }
-  };
-
-  loginFunction = () => {
-    const {usr, pass} = this.state;
+  function login(u, p) {
     Keyboard.dismiss();
-    //192.168.1.71
-
-    if (String(usr).trim().length != 0 && String(pass).trim().length != 0) {
-      this.handleMessageErrorFunction('Verificando datos', true);
+    //alert(usr + " " + psw);
+    if (String(u).trim().length != 0 && String(p).trim().length != 0) {
+      handleMessageErrorFunction('Verificando datos', true);
       let formInfo = new FormData();
       formInfo.append('action', 'login');
-      formInfo.append('u', usr);
-      formInfo.append('p', pass);
+      formInfo.append('u', u);
+      formInfo.append('p', p);
 
       fetch('http://192.168.1.71:8080/dispositivo/userActions.php', {
         method: 'POST',
         headers: {
-          //'Content-type':'application/x-www-form-urlencoded'
           'Content-type': 'multipart/form-data',
         },
         body: formInfo,
       })
         .then(response => response.json())
         .then(response => {
-          if (response.Response == 'Go') {
+          if (response.Response === 'Go') {
             AsyncStorage.setItem('isLogged', 'yes');
-            this.props.navigation.dispatch(
-              StackActions.replace('DashboardScreen'),
+            //navigation.push('DashboardScreen');
+            //navigation.dispatch(StackActions.push('DashboardScreen'));
+            navigation.dispatch(
+              CommonActions.reset({index: 0, routes: [{name: 'Home'}]}),
             );
           } else {
-            this.handleMessageErrorFunction(
-              'Datos de acceso incorrectos',
-              true,
-            );
-            /*this.setState({
-              errorText: 'Datos de acceso incorrectos',
-              errorFlag: true,
-            });*/
+            handleMessageErrorFunction('Datos de acceso incorrectos', true);
           }
         })
         .catch(error => {
           alert(error);
         });
     } else {
-      this.handleMessageErrorFunction(
-        'Completa los campos del formulario',
-        true,
-      );
-      /*this.setState({
-        errorText: 'Completa los campos del formulario',
-        errorFlag: true,
-      });*/
+      handleMessageErrorFunction('Completa los campos del formulario', true);
     }
     setTimeout(() => {
-      this.handleMessageErrorFunction('', false);
-    }, 6000);
-  };
-
-  render() {
-    return (
-      <ScrollView keyboardShouldPersistTaps="handled">
-        <Container>
-          <View style={stylesLogin.containerLogo}>
-            <Image
-              source={require('../img/cow1.png')}
-              style={stylesLogin.imageLogo}
-            />
-            <Text style={stylesLogin.titleApp}>Cow monitor</Text>
-          </View>
-          <Content>
-            <Item stackedLabel style={stylesLogin.inputMargins}>
-              <Label>Usuario</Label>
-
-              <Input
-                autoCapitalize="none"
-                keyboardType="default"
-                returnKeyType="next"
-                autoCorrect={false}
-                onChangeText={usr => this.setState({usr})}
-              />
-            </Item>
-            <Item stackedLabel style={stylesLogin.inputMargins}>
-              <Label>Contraseña</Label>
-              <Input
-                autoCapitalize="none"
-                secureTextEntry={true}
-                returnKeyType="go"
-                onChangeText={pass => this.setState({pass})}
-              />
-            </Item>
-            <Display enable={this.state.errorFlag}>
-              <View style={{paddingTop:15,justifyContent:'center', alignItems:'center'}}>
-                <Text style={{color:'red'}}>{this.state.errorText}</Text>
-              </View>
-            </Display>
-            <View style={stylesLogin.btnContainerLogin}>
-              <Button
-                uppercase={false}
-                rounded
-                block
-                //onPress={() =>
-                //this.props.navigation.navigate('DashboardScreen')
-                //}>
-                onPress={() => this.loginFunction()}>
-                <Text uppercase={false}>INICIAR SESIÓN</Text>
-              </Button>
-            </View>
-          </Content>
-        </Container>
-      </ScrollView>
-    );
+      handleMessageErrorFunction('', false);
+    }, 3000);
   }
-}
+
+  function handleMessageErrorFunction(m, f) {
+    setMessage(m);
+    setFlag(f);
+  }
+
+  return (
+    <ScrollView keyboardShouldPersistTaps="handled">
+      <Container>
+        <View style={stylesLogin.containerLogo}>
+          <Image
+            source={require('../img/cow1.png')}
+            style={stylesLogin.imageLogo}
+          />
+          <Text style={stylesLogin.titleApp}>Cow monitor</Text>
+        </View>
+        <Content>
+          <Item stackedLabel style={stylesLogin.inputMargins}>
+            <Label>Usuario</Label>
+
+            <Input
+              autoCapitalize="none"
+              keyboardType="default"
+              returnKeyType="next"
+              autoCorrect={false}
+              onChangeText={setUsr}
+              //onChangeText={usr => this.setState({usr})}
+            />
+          </Item>
+          <Item stackedLabel style={stylesLogin.inputMargins}>
+            <Label>Contraseña</Label>
+            <Input
+              autoCapitalize="none"
+              secureTextEntry={true}
+              returnKeyType="go"
+              onChangeText={setPsw}
+              //onChangeText={pass => this.setState({pass})}
+            />
+          </Item>
+          <Display enable={flag}>
+            <View
+              style={{
+                paddingTop: 15,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Text style={{color: 'red'}}>
+                {/*this.state.errorText*/ message}
+              </Text>
+            </View>
+          </Display>
+          <View style={stylesLogin.btnContainerLogin}>
+            <Button
+              uppercase={false}
+              rounded
+              block
+              //onPress={() =>
+              //this.props.navigation.navigate('DashboardScreen')
+              //}>
+              onPress={() => login(usr, psw)}>
+              <Text uppercase={false}>INICIAR SESIÓN</Text>
+            </Button>
+          </View>
+        </Content>
+      </Container>
+    </ScrollView>
+  );
+};
+
+// define your styles
 const stylesLogin = StyleSheet.create({
   containerLogo: {
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 30,
-    paddingTop: 50
+    paddingTop: 50,
   },
   imageLogo: {width: 300, height: 200},
   titleApp: {fontSize: 24, fontWeight: 'bold'},
@@ -166,3 +150,6 @@ const stylesLogin = StyleSheet.create({
     marginRight: 80,
   },
 });
+
+//make this component available to the app
+export default LoginScreen;

@@ -23,7 +23,7 @@ export default class DashboardScreen extends Component {
 
   isLoggedFunction = async () => {
     await AsyncStorage.removeItem('isLogged');
-    this.props.navigation.dispatch(StackActions.replace('LoginScreen'));
+    //this.props.navigation.dispatch(StackActions.replace('LoginScreen'));
   };
 
   render() {
