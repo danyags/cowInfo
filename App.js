@@ -1,7 +1,6 @@
 // In App.js in a new project
 
 import * as React from 'react';
-//import {useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -9,13 +8,13 @@ import {
   View,
   Text,
   StatusBar,
+  TextInput,
+  Button,
+  Keyboard,
 } from 'react-native';
-//import {View, Text, Button} from 'react-native';
+
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-//import * as LoginScreen from './src/components/Login';
-//import * as DashboardScreen from './src/components/Dashboard';
-//import TestFile from './src/components/TestFile';
 import LoginScreen from './src/components/LoginScreen';
 import DashboardScreen from './src/components/DashboardScreen';
 import LoadingScreen from './src/components/LoadingScreen';
@@ -26,115 +25,201 @@ const StackLoading = createStackNavigator();
 const StackLogged = createStackNavigator();
 const StackNoLogged = createStackNavigator();
 
-/*function callLoading() {
+const AuthContext = React.createContext();
+
+function SplashScreen() {
+  return <LoadingScreen />;
+}
+
+function HomeScreen() {
+  const {signOut} = React.useContext(AuthContext);
+  return <DashboardScreen signOut={signOut} />;
+}
+
+function SignInScreen() {
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
+  const {signIn} = React.useContext(AuthContext);
+
   return (
-    <StackLoading.Navigator>
-      <StackLoading.Screen
-        name="LoadingScreen"
-        component={LoadingScreen}
-        options={{headerShown: false}}
+    <View>
+      <TextInput
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
       />
-    </StackLoading.Navigator>
+      <TextInput
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+      <Button title="Sign in" onPress={() => signIn({username, password})} />
+    </View>
   );
 }
 
-function callNoLogged() {
-  return (
-    <StackLogged.Navigator>
-      <StackLogged.Screen
-        name="LoginScreen"
-        component={LoginScreen}
-        options={{headerShown: false}}
-      />
-    </StackLogged.Navigator>
+export default function App({navigation}) {
+  const [state, dispatch] = React.useReducer(
+    (prevState, action) => {
+      switch (action.type) {
+        case 'RESTORE_TOKEN':
+          return {
+            ...prevState,
+            userToken: action.token,
+            isLoading: false,
+          };
+        case 'SIGN_IN':
+          return {
+            ...prevState,
+            isSignout: false,
+            userToken: action.token,
+          };
+        case 'SIGN_OUT':
+          return {
+            ...prevState,
+            isSignout: true,
+            userToken: null,
+          };
+      }
+    },
+    {
+      isLoading: true,
+      isSignout: false,
+      userToken: null,
+    },
   );
-}
-
-function callLogged() {
-  return (
-    <StackNoLogged.Navigator>
-      <StackNoLogged.Screen
-        name="DashboardScreen"
-        component={DashboardScreen}
-        options={{headerShown: false}}
-      />
-    </StackNoLogged.Navigator>
-  );
-}*/
-
-const CallLoading = () => (
-  <StackLoading.Navigator>
-    <StackLoading.Screen
-      name="LoadingScreen"
-      component={LoadingScreen}
-      options={{headerShown: false}}
-    />
-  </StackLoading.Navigator>
-);
-
-const CallNoLogged = () => (
-  <StackLogged.Navigator>
-    <StackLogged.Screen
-      name="LoginScreen"
-      component={LoginScreen}
-      options={{headerShown: false}}
-    />
-  </StackLogged.Navigator>
-);
-
-const CallLogged = () => (
-  <StackNoLogged.Navigator>
-    <StackNoLogged.Screen
-      name="DashboardScreen"
-      component={DashboardScreen}
-      options={{headerShown: false}}
-    />
-  </StackNoLogged.Navigator>
-);
-
-function App() {
-  const [isLoggedIn, setLoggedIn] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
-  //const [user, setUser] = React.useState(null);
 
   React.useEffect(() => {
-    /*if (token) {
-      setLoggedIn(true);
-      console.log(isLoggedIn);
-    }*/
+    // Fetch the token from storage then navigate to our appropriate place
+    const bootstrapAsync = async () => {
+      let userToken;
 
-    async function verifyLogin() {
-      setTimeout(() => {
-        setIsLoading(!isLoading);
-        //setUser({});
-      }, 500);
-      let t;
       try {
-        t = await AsyncStorage.getItem('isLogged');
-        if (t !== null) {
-          setLoggedIn(true);
-        } else {
-          setLoggedIn(false);
-        }
+        userToken = await AsyncStorage.getItem('isLogged');
       } catch (e) {
-        console.log('Error');
+        // Restoring token failed
       }
-      setIsLoading(!isLoading);
-    }
-    verifyLogin();
+
+      // After restoring token, we may need to validate it in production apps
+
+      // This will switch to the App screen or Auth screen and this loading
+      // screen will be unmounted and thrown away.
+      dispatch({type: 'RESTORE_TOKEN', token: userToken});
+    };
+
+    bootstrapAsync();
   }, []);
 
+  const authContext = React.useMemo(
+    () => ({
+      signIn: async data => {
+        // In a production app, we need to send some data (usually username, password) to server and get a token
+        // We will also need to handle errors if sign in failed
+        // After getting token, we need to persist the token using `AsyncStorage`
+        // In the example, we'll use a dummy token
+
+        //alert(JSON.stringify(data))
+        if (
+          String(data.username).trim().length != 0 &&
+          String(data.password).trim().length != 0
+        ) {
+          Keyboard.dismiss();
+          if (
+            String(data.username).trim().length != 0 &&
+            String(data.password).trim().length != 0
+          ) {
+            //handleMessageErrorFunction('Verificando datos', true);
+            let formInfo = new FormData();
+            formInfo.append('action', 'login');
+            formInfo.append('u', data.username);
+            formInfo.append('p', data.password);
+
+            fetch('http://192.168.1.71:8080/dispositivo/userActions.php', {
+              method: 'POST',
+              headers: {
+                'Content-type': 'multipart/form-data',
+              },
+              body: formInfo,
+            })
+              .then(response => response.json())
+              .then(response => {
+                if (response.Response === 'Go') {
+                  AsyncStorage.setItem('isLogged', 'yes');
+                  //navigation.push('DashboardScreen');
+                  //navigation.dispatch(StackActions.push('DashboardScreen'));
+                  dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
+                } else {
+                  //handleMessageErrorFunction('Datos de acceso incorrectos', true);
+                  alert('Datos de acceso incorrectos');
+                }
+              })
+              .catch(error => {
+                alert(error);
+              });
+          } else {
+            alert('Completa los campos del formulario');
+            //handleMessageErrorFunction('Completa los campos del formulario', true);
+          }
+          /*setTimeout(() => {
+            handleMessageErrorFunction('', false);
+          }, 3000);*/
+
+          //dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
+        } else {
+          alert("NO PASS");
+        }
+      },
+      signOut: async () => {
+        await AsyncStorage.removeItem('isLogged');
+        dispatch({type: 'SIGN_OUT', token: null});
+      },
+      signUp: async data => {
+        // In a production app, we need to send user data to server and get a token
+        // We will also need to handle errors if sign up failed
+        // After getting token, we need to persist the token using `AsyncStorage`
+        // In the example, we'll use a dummy token
+
+        dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
+      },
+    }),
+    [],
+  );
+
   return (
-    <NavigationContainer>
-      {isLoading ? (
-        <CallLoading />
-      ) : isLoggedIn === false ? (
-        <CallNoLogged />
-      ) : (
-        <CallLogged />
-      )}
-    </NavigationContainer>
+    <AuthContext.Provider value={authContext}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {state.isLoading ? (
+            // We haven't finished checking for the token yet
+            <Stack.Screen
+              name="Splash"
+              component={SplashScreen}
+              options={{headerShown: false}}
+            />
+          ) : state.userToken == null ? (
+            // No token found, user isn't signed in
+            <Stack.Screen
+              name="SignIn"
+              component={SignInScreen}
+              options={{
+                title: 'Sign in',
+                // When logging out, a pop animation feels intuitive
+                animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                headerShown: false,
+              }}
+            />
+          ) : (
+            // User is signed in
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{headerShown: false}}
+            />
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AuthContext.Provider>
   );
 }
-
-export default App;

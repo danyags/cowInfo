@@ -46,7 +46,7 @@ export default class DashboardScreen extends Component {
             //onPress={() =>
             //this.props.navigation.navigate('DashboardScreen')
             //}>
-            onPress={() => this.isLoggedFunction()}>
+            onPress={this.props.signOut}>
             <Text>salir</Text>
           </Button>
         </Content>
