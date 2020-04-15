@@ -1,12 +1,19 @@
 //import liraries
 import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 
 // create a component
 const LoadingScreen = () => {
   return (
     <View style={styles.container}>
-      <Text>Loading</Text>
+      <Animatable.Text
+        animation="pulse"
+        easing="ease-out"
+        iterationCount="infinite"
+        style={{ fontSize:40}}>
+        ⏳
+      </Animatable.Text>
     </View>
   );
 };

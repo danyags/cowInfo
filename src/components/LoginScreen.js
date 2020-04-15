@@ -14,9 +14,16 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {StackActions} from '@react-navigation/native';
 import {CommonActions} from '@react-navigation/native';
 import Display from 'react-native-display';
+import * as Animatable from 'react-native-animatable';
 
 // create a component
-const LoginScreen = ({navigation, helper}) => {
+const LoginScreen = ({
+  signIn,
+  setUsername,
+  setPassword,
+  username,
+  password,
+}) => {
   const [usr, setUsr] = React.useState('');
   const [psw, setPsw] = React.useState('');
   const [message, setMessage] = React.useState('');
@@ -24,7 +31,6 @@ const LoginScreen = ({navigation, helper}) => {
 
   function login(u, p) {
     Keyboard.dismiss();
-    //alert(usr + " " + psw);
     if (String(u).trim().length != 0 && String(p).trim().length != 0) {
       handleMessageErrorFunction('Verificando datos', true);
       let formInfo = new FormData();
@@ -43,11 +49,9 @@ const LoginScreen = ({navigation, helper}) => {
         .then(response => {
           if (response.Response === 'Go') {
             AsyncStorage.setItem('isLogged', 'yes');
-            //navigation.push('DashboardScreen');
-            //navigation.dispatch(StackActions.push('DashboardScreen'));
-            navigation.dispatch(
-              CommonActions.reset({index: 0, routes: [{name: 'Home'}]}),
-            );
+            setUsername(u);
+            setPassword(p);
+            signIn({username, password});
           } else {
             handleMessageErrorFunction('Datos de acceso incorrectos', true);
           }
@@ -71,16 +75,16 @@ const LoginScreen = ({navigation, helper}) => {
   return (
     <ScrollView keyboardShouldPersistTaps="handled">
       <Container>
-        <View style={stylesLogin.containerLogo}>
+        <Animatable.View style={stylesLogin.containerLogo} animation={'bounceInDown'}>
           <Image
             source={require('../img/cow1.png')}
             style={stylesLogin.imageLogo}
           />
           <Text style={stylesLogin.titleApp}>Cow monitor</Text>
-        </View>
+        </Animatable.View>
         <Content>
           <Item stackedLabel style={stylesLogin.inputMargins}>
-            <Label>Usuario</Label>
+            <Label style={stylesLogin.inputLabel}>Usuario</Label>
 
             <Input
               autoCapitalize="none"
@@ -88,39 +92,28 @@ const LoginScreen = ({navigation, helper}) => {
               returnKeyType="next"
               autoCorrect={false}
               onChangeText={setUsr}
-              //onChangeText={usr => this.setState({usr})}
             />
           </Item>
           <Item stackedLabel style={stylesLogin.inputMargins}>
-            <Label>Contraseña</Label>
+            <Label style={stylesLogin.inputLabel}>Contraseña</Label>
             <Input
               autoCapitalize="none"
               secureTextEntry={true}
               returnKeyType="go"
               onChangeText={setPsw}
-              //onChangeText={pass => this.setState({pass})}
             />
           </Item>
           <Display enable={flag}>
-            <View
-              style={{
-                paddingTop: 15,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <Text style={{color: 'red'}}>
-                {/*this.state.errorText*/ message}
-              </Text>
+            <View style={stylesLogin.errorMessage}>
+              <Text style={stylesLogin.textError}>{message}</Text>
             </View>
           </Display>
           <View style={stylesLogin.btnContainerLogin}>
             <Button
               uppercase={false}
+              primary
               rounded
               block
-              //onPress={() =>
-              //this.props.navigation.navigate('DashboardScreen')
-              //}>
               onPress={() => login(usr, psw)}>
               <Text uppercase={false}>INICIAR SESIÓN</Text>
             </Button>
@@ -141,13 +134,22 @@ const stylesLogin = StyleSheet.create({
   },
   imageLogo: {width: 300, height: 200},
   titleApp: {fontSize: 24, fontWeight: 'bold'},
-  inputMargins: {marginLeft: 30, marginRight: 30},
+  inputMargins: {marginLeft: 30, marginRight: 30, borderBottomColor: '#000'},
   btnContainerLogin: {
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 30,
     marginLeft: 80,
     marginRight: 80,
+  },
+  inputLabel: {color: '#000', fontWeight: 'bold'},
+  errorMessage: {
+    paddingTop: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textError: {
+    color: 'red',
   },
 });
 

@@ -42,7 +42,7 @@ function SignInScreen() {
 
   const {signIn} = React.useContext(AuthContext);
 
-  return (
+  /*return (
     <View>
       <TextInput
         placeholder="Username"
@@ -57,6 +57,15 @@ function SignInScreen() {
       />
       <Button title="Sign in" onPress={() => signIn({username, password})} />
     </View>
+  );*/
+  return (
+    <LoginScreen
+      setUsername={setUsername}
+      setPassword={setPassword}
+      signIn={signIn}
+      username={username}
+      password={password}
+    />
   );
 }
 
@@ -95,15 +104,13 @@ export default function App({navigation}) {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       let userToken;
-
       try {
         userToken = await AsyncStorage.getItem('isLogged');
       } catch (e) {
         // Restoring token failed
+        console.log(e);
       }
-
       // After restoring token, we may need to validate it in production apps
-
       // This will switch to the App screen or Auth screen and this loading
       // screen will be unmounted and thrown away.
       dispatch({type: 'RESTORE_TOKEN', token: userToken});
@@ -120,69 +127,21 @@ export default function App({navigation}) {
         // After getting token, we need to persist the token using `AsyncStorage`
         // In the example, we'll use a dummy token
 
-        //alert(JSON.stringify(data))
-        if (
-          String(data.username).trim().length != 0 &&
-          String(data.password).trim().length != 0
-        ) {
-          Keyboard.dismiss();
-          if (
-            String(data.username).trim().length != 0 &&
-            String(data.password).trim().length != 0
-          ) {
-            //handleMessageErrorFunction('Verificando datos', true);
-            let formInfo = new FormData();
-            formInfo.append('action', 'login');
-            formInfo.append('u', data.username);
-            formInfo.append('p', data.password);
-
-            fetch('http://192.168.1.71:8080/dispositivo/userActions.php', {
-              method: 'POST',
-              headers: {
-                'Content-type': 'multipart/form-data',
-              },
-              body: formInfo,
-            })
-              .then(response => response.json())
-              .then(response => {
-                if (response.Response === 'Go') {
-                  AsyncStorage.setItem('isLogged', 'yes');
-                  //navigation.push('DashboardScreen');
-                  //navigation.dispatch(StackActions.push('DashboardScreen'));
-                  dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
-                } else {
-                  //handleMessageErrorFunction('Datos de acceso incorrectos', true);
-                  alert('Datos de acceso incorrectos');
-                }
-              })
-              .catch(error => {
-                alert(error);
-              });
-          } else {
-            alert('Completa los campos del formulario');
-            //handleMessageErrorFunction('Completa los campos del formulario', true);
-          }
-          /*setTimeout(() => {
-            handleMessageErrorFunction('', false);
-          }, 3000);*/
-
-          //dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
-        } else {
-          alert("NO PASS");
-        }
+        //console.log(data.username + ' ' + data.password);
+        dispatch({type: 'SIGN_IN', token: data.username});
       },
       signOut: async () => {
         await AsyncStorage.removeItem('isLogged');
         dispatch({type: 'SIGN_OUT', token: null});
       },
-      signUp: async data => {
+      /*signUp: async data => {
         // In a production app, we need to send user data to server and get a token
         // We will also need to handle errors if sign up failed
         // After getting token, we need to persist the token using `AsyncStorage`
         // In the example, we'll use a dummy token
 
         dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
-      },
+      },*/
     }),
     [],
   );
