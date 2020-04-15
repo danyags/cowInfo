@@ -132,6 +132,7 @@ export default function App({navigation}) {
       },
       signOut: async () => {
         await AsyncStorage.removeItem('isLogged');
+        await AsyncStorage.removeItem('idRanch');
         dispatch({type: 'SIGN_OUT', token: null});
       },
       /*signUp: async data => {

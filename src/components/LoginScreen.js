@@ -47,8 +47,20 @@ const LoginScreen = ({
       })
         .then(response => response.json())
         .then(response => {
-          if (response.Response === 'Go') {
+          /*if (response.Response === 'Go') {
             AsyncStorage.setItem('isLogged', 'yes');
+            setUsername(u);
+            setPassword(p);
+            signIn({username, password});
+          } else {
+            handleMessageErrorFunction('Datos de acceso incorrectos', true);
+          }*/
+          if (response.length > 0) {
+            AsyncStorage.setItem('isLogged', 'yes');
+            AsyncStorage.setItem(
+              'idRanch',
+              response[0]['tbl_usuarios_idUsuario'],
+            );
             setUsername(u);
             setPassword(p);
             signIn({username, password});
